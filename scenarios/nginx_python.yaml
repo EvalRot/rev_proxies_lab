@@ -1,0 +1,21 @@
+# Minimal scenario example (runner stub provided in tools/run_scenario.py)
+chain: [nginx]
+backend: python
+misconfigs:
+  nginx: base  # or 'underscores_in_headers_on', 'merge_slashes_off'
+requests:
+  - name: simple_get
+    path: /echo/one//two
+    query: x=1&x=2
+    headers:
+      Host: test.local
+      X-Test: [a, b]
+  - name: te_vs_cl
+    path: /conflict
+    headers:
+      Host: test.local
+      Transfer-Encoding: chunked
+      Content-Length: "5"
+    raw_body: |
+      10\r\n0123456789ABCDEF\r\n0\r\n\r\n
+

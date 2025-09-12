@@ -1,0 +1,21 @@
+version: "3.9"
+
+x-default-logging: &default_logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  backend-python:
+    build: ../services/backends/python
+    profiles: ["python"]
+    container_name: lab_backend_python
+    restart: unless-stopped
+    logging: *default_logging
+    networks: [back]
+    expose:
+      - "8000"
+
+networks:
+  back: {}
