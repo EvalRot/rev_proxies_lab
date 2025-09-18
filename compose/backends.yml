@@ -16,6 +16,21 @@ services:
     networks: [back]
     expose:
       - "8000"
+    # Optional host publish for direct access: http://localhost:${PYTHON_HOST_PORT}
+    ports:
+      - "${PYTHON_HOST_PORT:-18080}:8000"
+  backend-php:
+    build: ../services/backends/php
+    profiles: ["php"]
+    container_name: lab_backend_php
+    restart: unless-stopped
+    logging: *default_logging
+    networks: [back]
+    expose:
+      - "80"
+    # Optional host publish for direct access: http://localhost:${PHP_HOST_PORT}
+    ports:
+      - "${PHP_HOST_PORT:-18081}:80"
 
 networks:
   back: {}

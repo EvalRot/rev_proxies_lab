@@ -3,8 +3,8 @@ param(
   [string]$Action = 'up',
   [ValidateSet('nginx')]
   [string]$Proxy = 'nginx',
-  [ValidateSet('python')]
-  [string]$Backend = 'python',
+  [ValidateSet('python','php')]
+  [string[]]$Backend = @('python'),
   [int]$Port = 8080,
   [string]$NginxConf = 'services/proxies/nginx/conf/base.conf'
 )
@@ -19,19 +19,24 @@ function ComposeCmd {
 }
 
 if ($Proxy -ne 'nginx') { throw "Only nginx proxy is scaffolded in this starter." }
-if ($Backend -ne 'python') { throw "Only python backend is scaffolded in this starter." }
+# Validate backends
+foreach ($b in $Backend) {
+  if (@('python','php') -notcontains $b) { throw "Unsupported backend: $b" }
+}
 
 $env:NGINX_HOST_PORT = "$Port"
 $env:NGINX_CONF = (Resolve-Path $NginxConf).Path
 
+$profiles = @("--profile $Proxy") + ($Backend | ForEach-Object { "--profile $_" })
+
 switch ($Action) {
   'up' {
-    ComposeCmd "--profile $Proxy --profile $Backend up -d --build"
+    ComposeCmd ("{0} up -d --build" -f ($profiles -join ' '))
   }
   'down' {
-    ComposeCmd "--profile $Proxy --profile $Backend down -v"
+    ComposeCmd ("{0} down -v" -f ($profiles -join ' '))
   }
   'logs' {
-    ComposeCmd "--profile $Proxy --profile $Backend logs -f --tail=100"
+    ComposeCmd ("{0} logs -f --tail=100" -f ($profiles -join ' '))
   }
 }

@@ -14,6 +14,17 @@ Quick start (Docker Desktop required):
   - PowerShell: `pwsh scripts/run.ps1 -Action down -Proxy nginx -Backend python`
   - Bash: `./scripts/run.sh -a down -p nginx -b python`
 
+Direct backend access (without Nginx)
+- Compose publishes host ports for direct testing:
+  - Python: `http://localhost:${PYTHON_HOST_PORT:-18080}` (container 8000)
+  - PHP: `http://localhost:${PHP_HOST_PORT:-18081}` (container 80)
+- Set ports and start both backends:
+  - PowerShell: `$env:PYTHON_HOST_PORT=18080; $env:PHP_HOST_PORT=18081; pwsh scripts/run.ps1 -Action up -Proxy nginx -Backend python,php`
+  - Bash: `PYTHON_HOST_PORT=18080 PHP_HOST_PORT=18081 ./scripts/run.sh -a up -p nginx -b python,php`
+- Then you can point Burp directly to:
+  - Python backend: `http://localhost:18080`
+  - PHP backend: `http://localhost:18081`
+
 Layout:
 - `services/backends/python/` — Flask echo application behind Gunicorn.
 - `services/proxies/nginx/` — Nginx image + base config and a couple misconfig variants.
