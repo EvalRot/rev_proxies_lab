@@ -9,3 +9,14 @@ RewriteRule ^internal/?(.*)$ internal/index.php?path=$1 [L,QSA,B]
 # Default everything else to public controller
 RewriteRule ^$ public/index.php [L,QSA]
 RewriteRule ^(.*)$ public/index.php?path=$1 [L,QSA,B]
+
+
+# Route /public/* to public/index.php with path captured
+RewriteRule ^public/?(.*)$ public/index.php?path=$1 [L,QSA,B]
+
+# Route /internal/* to internal/index.php with path captured
+RewriteRule ^internal/?(.*)$ internal/index.php?path=$1 [L,QSA,B]
+
+# Default everything else to public controller
+RewriteRule ^$ public/index.php [L,QSA]
+RewriteRule ^(.*)$ public/index.php?path=$1 [L,QSA,B]

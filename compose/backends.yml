@@ -13,13 +13,17 @@ services:
     container_name: lab_backend_python
     restart: unless-stopped
     logging: *default_logging
-    command: ["/bin/sh", "-c", "apt-get update && apt-get install -y tcpdump && rm -rf /var/lib/apt/lists/* && exec gunicorn -b 0.0.0.0:8000 app:app" ]
+    environment:
+      PY_DEBUGPY: "${PY_DEBUGPY:-0}"
+      DEBUGPY_PORT: "${PYTHON_DEBUGPY_PORT:-5678}"
+    command: ["/app/entrypoint.sh"]
     networks: [back]
     expose:
       - "8000"
     # Optional host publish for direct access: http://localhost:${PYTHON_HOST_PORT}
     ports:
       - "${PYTHON_HOST_PORT:-18080}:8000"
+      - "${PYTHON_DEBUGPY_PORT:-5678}:5678"
   backend-php:
     build: ../services/backends/php
     profiles: ["php"]

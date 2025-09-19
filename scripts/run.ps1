@@ -1,11 +1,12 @@
 param(
-  [ValidateSet('up','down','logs')]
+  [ValidateSet('up','down','logs','debug-py')]
   [string]$Action = 'up',
   [ValidateSet('nginx')]
   [string]$Proxy = 'nginx',
   [ValidateSet('python','php')]
   [string[]]$Backend = @('python'),
   [int]$Port = 8080,
+  [int]$DebugpyPort = 5678,
   [string]$NginxConf = 'services/proxies/nginx/conf/base.conf'
 )
 
@@ -29,7 +30,22 @@ $env:NGINX_CONF = (Resolve-Path $NginxConf).Path
 
 $profiles = @("--profile $Proxy") + ($Backend | ForEach-Object { "--profile $_" })
 
+Remove-Item Env:PY_DEBUGPY -ErrorAction SilentlyContinue
+Remove-Item Env:PYTHON_DEBUGPY_PORT -ErrorAction SilentlyContinue
+
 switch ($Action) {
+  'debug-py' {
+    Write-Host ("Bringing up services in debugpy mode (waiting for debugger on port {0})..." -f $DebugpyPort)
+    $env:PY_DEBUGPY = '1'
+    $env:PYTHON_DEBUGPY_PORT = [string]$DebugpyPort
+    try {
+      ComposeCmd ("{0} up --build" -f ($profiles -join ' '))
+    }
+    finally {
+      Remove-Item Env:PY_DEBUGPY -ErrorAction SilentlyContinue
+      Remove-Item Env:PYTHON_DEBUGPY_PORT -ErrorAction SilentlyContinue
+    }
+  }
   'up' {
     ComposeCmd ("{0} up -d --build" -f ($profiles -join ' '))
   }

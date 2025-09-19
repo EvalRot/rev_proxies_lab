@@ -13,6 +13,10 @@ Quick start (Docker Desktop required):
 - Tear down:
   - PowerShell: `pwsh scripts/run.ps1 -Action down -Proxy nginx -Backend python`
   - Bash: `./scripts/run.sh -a down -p nginx -b python`
+- Debug Gunicorn via debugpy (waits for your debugger before handling requests):
+  - PowerShell: `pwsh scripts/run.ps1 -Action debug-py -Proxy nginx -Backend python [-DebugpyPort 5678]`
+  - Bash: `DEBUGPY_PORT=5678 ./scripts/run.sh -a debug-py -p nginx -b python`
+  - Attach from VSCode with "Python: Attach using debugpy" targeting `localhost:5678` and map `services/backends/python` -> `/app/services/backends/python`.
 
 Direct backend access (without Nginx)
 - Compose publishes host ports for direct testing:

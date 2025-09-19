@@ -7,6 +7,7 @@ ACTION="up"
 PROXY="nginx"
 BACKENDS="python"
 PORT="8080"
+DEBUGPY_PORT="${DEBUGPY_PORT:-5678}"
 NGINX_CONF_PATH="services/proxies/nginx/conf/base.conf"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -92,8 +93,17 @@ case "$ACTION" in
     echo "Tailing logs... (Ctrl-C to stop)"
     compose --profile "$PROXY" $(for b in "${BACKEND_ARR[@]}"; do printf -- " --profile %s" "$b"; done) logs -f --tail=100
     ;;
+  debug-py)
+    echo "Bringing up services in debugpy mode (waiting for debugger on port ${DEBUGPY_PORT})..."
+    export PY_DEBUGPY=1
+    export PYTHON_DEBUGPY_PORT="${DEBUGPY_PORT}"
+    compose --profile "$PROXY" $(for b in "${BACKEND_ARR[@]}"; do printf -- " --profile %s" "$b"; done) up --build
+    rc=$?
+    unset PY_DEBUGPY PYTHON_DEBUGPY_PORT
+    exit $rc
+    ;;
   *)
-    echo "Unknown action: $ACTION (expected up|down|logs)" >&2
+    echo "Unknown action: $ACTION (expected up|down|logs|debug-py)" >&2
     exit 2
     ;;
 esac
