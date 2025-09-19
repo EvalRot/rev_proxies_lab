@@ -9,6 +9,9 @@ BACKENDS="python"
 PORT="8080"
 NGINX_CONF_PATH="services/proxies/nginx/conf/base.conf"
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
 while getopts ":a:p:b:P:c:" opt; do
   case ${opt} in
     a) ACTION="$OPTARG" ;;
@@ -33,8 +36,40 @@ for b in "${BACKEND_ARR[@]}"; do
   esac
 done
 
+normalize_path() {
+  local path="$1"
+  if [[ "$path" == /* ]]; then
+    printf '%s' "$path"
+    return
+  fi
+
+  if [[ "$path" =~ ^[A-Za-z]:[\\/].* ]]; then
+    printf '%s' "$path"
+    return
+  fi
+
+  local rel_dir="${path%/*}"
+  local rel_base="${path##*/}"
+  if [[ "$rel_dir" == "$path" ]]; then
+    rel_dir='.'
+    rel_base="$path"
+  fi
+
+  local resolved
+  if resolved=$(cd "$REPO_ROOT" && cd "$rel_dir" 2>/dev/null && pwd); then
+    printf '%s/%s' "$resolved" "$rel_base"
+  else
+    printf '%s/%s' "$REPO_ROOT" "$path"
+  fi
+}
+
 export NGINX_HOST_PORT="$PORT"
-export NGINX_CONF="${NGINX_CONF_PATH}"
+export NGINX_CONF="$(normalize_path "$NGINX_CONF_PATH")"
+
+if [[ ! -f "$NGINX_CONF" ]]; then
+  echo "Nginx config file not found: $NGINX_CONF" >&2
+  exit 1
+fi
 
 compose() {
   docker compose \

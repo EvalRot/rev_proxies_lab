@@ -13,6 +13,7 @@ services:
     container_name: lab_backend_python
     restart: unless-stopped
     logging: *default_logging
+    command: ["/bin/sh", "-c", "apt-get update && apt-get install -y tcpdump && rm -rf /var/lib/apt/lists/* && exec gunicorn -b 0.0.0.0:8000 app:app" ]
     networks: [back]
     expose:
       - "8000"
@@ -25,6 +26,7 @@ services:
     container_name: lab_backend_php
     restart: unless-stopped
     logging: *default_logging
+    command: ["/bin/sh", "-c", "apt-get update && apt-get install -y tcpdump && rm -rf /var/lib/apt/lists/* && exec docker-php-entrypoint apache2-foreground" ]
     networks: [back]
     expose:
       - "80"
