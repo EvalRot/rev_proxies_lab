@@ -13,4 +13,9 @@ if [ "${PY_DEBUGPY}" = "1" ]; then
   echo "[entrypoint] debugpy mode on; worker will wait on ${DEBUGPY_PORT} via post_fork"
 fi
 
-exec gunicorn -c /app/gunicorn.conf.py
+set -- gunicorn -c /app/gunicorn.conf.py
+if [ -n "${GUNICORN_FORWARDED_ALLOW_IPS:-}" ]; then
+  set -- "$@" --forwarded-allow-ips "${GUNICORN_FORWARDED_ALLOW_IPS}"
+fi
+
+exec "$@"

@@ -7,7 +7,8 @@ param(
   [string[]]$Backend = @('python'),
   [int]$Port = 8080,
   [int]$DebugpyPort = 5678,
-  [string]$NginxConf = 'services/proxies/nginx/conf/base.conf'
+  [string]$NginxConf = 'services/proxies/nginx/conf/base.conf',
+  [switch]$ForwardedAllowAll
 )
 
 $ErrorActionPreference = 'Stop'
@@ -32,6 +33,13 @@ $profiles = @("--profile $Proxy") + ($Backend | ForEach-Object { "--profile $_" 
 
 Remove-Item Env:PY_DEBUGPY -ErrorAction SilentlyContinue
 Remove-Item Env:PYTHON_DEBUGPY_PORT -ErrorAction SilentlyContinue
+Remove-Item Env:PYTHON_FORWARDED_ALLOW_IPS -ErrorAction SilentlyContinue
+
+$forwardEnvSet = $false
+if ($ForwardedAllowAll) {
+  $env:PYTHON_FORWARDED_ALLOW_IPS = '*'
+  $forwardEnvSet = $true
+}
 
 switch ($Action) {
   'debug-py' {
@@ -44,15 +52,19 @@ switch ($Action) {
     finally {
       Remove-Item Env:PY_DEBUGPY -ErrorAction SilentlyContinue
       Remove-Item Env:PYTHON_DEBUGPY_PORT -ErrorAction SilentlyContinue
+      if ($forwardEnvSet) { Remove-Item Env:PYTHON_FORWARDED_ALLOW_IPS -ErrorAction SilentlyContinue }
     }
   }
   'up' {
     ComposeCmd ("{0} up -d --build" -f ($profiles -join ' '))
+    if ($forwardEnvSet) { Remove-Item Env:PYTHON_FORWARDED_ALLOW_IPS -ErrorAction SilentlyContinue }
   }
   'down' {
     ComposeCmd ("{0} down -v" -f ($profiles -join ' '))
+    if ($forwardEnvSet) { Remove-Item Env:PYTHON_FORWARDED_ALLOW_IPS -ErrorAction SilentlyContinue }
   }
   'logs' {
     ComposeCmd ("{0} logs -f --tail=100" -f ($profiles -join ' '))
+    if ($forwardEnvSet) { Remove-Item Env:PYTHON_FORWARDED_ALLOW_IPS -ErrorAction SilentlyContinue }
   }
 }

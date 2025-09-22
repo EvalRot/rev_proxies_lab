@@ -16,6 +16,7 @@ services:
     environment:
       PY_DEBUGPY: "${PY_DEBUGPY:-0}"
       DEBUGPY_PORT: "${PYTHON_DEBUGPY_PORT:-5678}"
+      GUNICORN_FORWARDED_ALLOW_IPS: "${PYTHON_FORWARDED_ALLOW_IPS:-}"
     command: ["/app/entrypoint.sh"]
     networks: [back]
     expose:

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Usage: ./scripts/run.sh [-a up|down|logs] [-p nginx] [-b python] [-P 8080] [-c services/proxies/nginx/conf/base.conf]
+# Usage: ./scripts/run.sh [-a up|down|logs] [-p nginx] [-b python] [-P 8080] [-c services/proxies/nginx/conf/base.conf] [-F]
 
 ACTION="up"
 PROXY="nginx"
@@ -9,17 +9,19 @@ BACKENDS="python"
 PORT="8080"
 DEBUGPY_PORT="${DEBUGPY_PORT:-5678}"
 NGINX_CONF_PATH="services/proxies/nginx/conf/base.conf"
+FORWARDED_ALLOW_ALL=0
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-while getopts ":a:p:b:P:c:" opt; do
+while getopts ":a:p:b:P:c:F" opt; do
   case ${opt} in
     a) ACTION="$OPTARG" ;;
     p) PROXY="$OPTARG" ;;
     b) BACKENDS="$OPTARG" ;;
     P) PORT="$OPTARG" ;;
     c) NGINX_CONF_PATH="$OPTARG" ;;
+    F) FORWARDED_ALLOW_ALL=1 ;;
     :) echo "Option -$OPTARG requires an argument" >&2; exit 2 ;;
     \?) echo "Invalid option -$OPTARG" >&2; exit 2 ;;
   esac
@@ -66,6 +68,9 @@ normalize_path() {
 
 export NGINX_HOST_PORT="$PORT"
 export NGINX_CONF="$(normalize_path "$NGINX_CONF_PATH")"
+if [[ "$FORWARDED_ALLOW_ALL" == "1" ]]; then
+  export PYTHON_FORWARDED_ALLOW_IPS="*"
+fi
 
 if [[ ! -f "$NGINX_CONF" ]]; then
   echo "Nginx config file not found: $NGINX_CONF" >&2

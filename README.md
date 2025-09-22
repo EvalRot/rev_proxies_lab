@@ -17,6 +17,14 @@ Quick start (Docker Desktop required):
   - PowerShell: `pwsh scripts/run.ps1 -Action debug-py -Proxy nginx -Backend python [-DebugpyPort 5678]`
   - Bash: `DEBUGPY_PORT=5678 ./scripts/run.sh -a debug-py -p nginx -b python`
   - Attach from VSCode with "Python: Attach using debugpy" targeting `localhost:5678` and map `services/backends/python` -> `/app/services/backends/python`.
+- Apply Nginx config changes without bouncing other containers:
+  - PowerShell: `docker exec lab_nginx nginx -s reload`
+  - Bash: `docker exec lab_nginx nginx -s reload`
+
+Optional Gunicorn flag handling:
+- Allow all forwarded IP headers (maps to `gunicorn --forwarded-allow-ips '*'`):
+  - PowerShell: add `-ForwardedAllowAll`
+  - Bash: add `-F`
 
 Direct backend access (without Nginx)
 - Compose publishes host ports for direct testing:
