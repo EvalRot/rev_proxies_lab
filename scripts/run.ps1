@@ -27,7 +27,10 @@ foreach ($b in $Backend) {
 }
 
 $env:NGINX_HOST_PORT = "$Port"
-$env:NGINX_CONF = (Resolve-Path $NginxConf).Path
+$resolvedConf = (Resolve-Path $NginxConf).Path
+$env:NGINX_CONF = $resolvedConf
+# Also pass the directory so docker compose mounts the entire folder with *.inc
+$env:NGINX_CONF_DIR = (Split-Path -Path $resolvedConf -Parent)
 
 $profiles = @("--profile $Proxy") + ($Backend | ForEach-Object { "--profile $_" })
 

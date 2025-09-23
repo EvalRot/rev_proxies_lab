@@ -15,6 +15,8 @@ RUN pip install --no-cache-dir --upgrade pip \
 
 EXPOSE 8000
 
-RUN chmod +x /app/entrypoint.sh
+# Normalize line endings and ensure executable (handles Windows checkouts)
+RUN sed -i 's/\r$//' /app/entrypoint.sh \
+ && chmod +x /app/entrypoint.sh
 
 CMD ["/app/entrypoint.sh"]
