@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-proxy
+  namespace: revlab
+  labels:
+    app: nginx-proxy
+spec:
+  type: ClusterIP
+  selector:
+    app: nginx-proxy
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
